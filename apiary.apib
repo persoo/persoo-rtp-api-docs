@@ -1,0 +1,337 @@
+FORMAT: 1A
+HOST: http://rtp.persoo.cz
+
+# Persoo RTP
+Real-time processing unit (RTP) process ... TODO
+
+
+## How Persoo works
+Create an account in Persoo, provide product exports (i.e. by XML feed), add Persoo javascript loader 
+to your webpages and do the rest in Persoo Administraton. (TODO add registration link).
+
+### Levels of integration
+
+There are 2 levels of Persoo integration
+* **javascript** - your webserver do not need to know about Persoo. Everything is realized 
+  through [javascript client](https://confluence.persoo.cz/display/DOC/Javascript+Data+Collection)
+  which reports data, receives personalizations as HTML fragments and displays them on correct locations. Personalizations
+  are added to a page as dynamic HTML fragments (similarly to Ajax, but works also cross domain).
+
+* **webserver** - your webserver is responsible for keeping visitor/browser identification. Reports
+  data with visitor behavior and receives personalizations as JSON. 
+  It is his responsibility to render the data to HTML, or even to decide how to use them.
+
+You can combine both ways - webserver renders personalizations itself, because final HTML loads faster 
+in browsers, but data about offer impressions, clicks, and dynamic ajax events are reported
+through javascript client.
+
+### Report data and query for personalizations
+
+In Persoo, both is processed in real time in one request:
+
+1. **Report data** --- webserver or javascript in browser reports data about visitor interactions. ,
+   i.e. visitor with cookie "ABC" did event "pageview", because he viewed "detail" 
+   page of product "prod123" from category "catXYZ". Server process reported data in real time before sending response.
+2. **Query for personalizations/recommendations** --- as a response, RTP returns personalizactionns
+   related to product "detail" page, i.e. recommendation, personalized banners,...
+
+In website personalizations, we typically want to report visitor interactions
+(i.e. pageview, add to cart, click button) and react immediatelly (display/update
+a recommendation, offer, banner,...). Persoo is designed not to require too many queries,
+because work with many http requests makes it slowlyer. You can **report all data at once in one query** and even get what you need. In case you need to report data only, Persoo returns
+almost empty response, just as a confirmation.
+
+### Workflows for request processing
+
+RTP requests are processed by **workflows**. Main workflow is designed to processed **events**
+from a website, i.e. "pageview", "addToCart", "statistics" events. Workflows can call other
+workflows as sub-workflows, or even use conditions or change arguments for workflow calls.
+
+In RTP request, you can specify a workflow to be called, i.e. when you need to get recommendations
+from a particular recommendation scenario.
+
+TODO predefined workflows, events, parameters they need (dataLayers specification).
+
+### Visitor identifications
+
+Visitor in Persoo corresponds to a real person. Visitor may use several **browsers or devices.** 
+In Persoo, we denote them by **VID** (VisitorID). Typically they correspond to a cookie.
+
+Visitor also have **named identifications** like email, phone number, user ID, etc. These identification
+are in Persoo represented by pairs **[idType, idValue]**, i.e. [email, hello@persoo.cz], 
+[phone, "+420608179251"], [userId, 12345].
+
+You only need to report identification to Persoo and it does the rest for you -- calculate equivalence
+classes with certain probability, merging visitor profiles, or even spliting visitor profiles when
+it is necessary to correct an equivalence class.
+
+
+### Terminology
+
+* **Visitor** - real website visitor. He uses several browsers or devices identified by VID (Visitor ID, i.e. cookie), has email address, user ID, etc.
+* **Client** - owner of the website.
+* **User** - someone configuring Persoo for a client.
+
+## Technical
+
+### Allowed HTTPs requests
+
+- `GET` - Retrieves a resource or list of resources
+
+### Typical Server Responses
+
+- 200 `OK` - The request was successful (some API calls may return 201 or 204 instead).
+- 204 `No content` - The request was successful, but returns no content.
+- 400 `Bad Request` - The request could not be understood or was missing required parameters.
+- 401 `Unauthorized` - Authentication token is invalid or expired (try login again)
+- 403 `Forbidden` - Access denied. 
+- 404 `Not Found` - Resource was not found.
+
+### JSON/JSONP
+All methods supports JSON and JSONP. Format is selected by suffix (file type)
+in request's pathname:
+* **.js** for JSONP (response is javascript)
+* **.json** for JSON
+
+Javascript in JSONP response calls the `function persoo.response.push()` with the JSON response as the argument. 
+The caller is responsible for implementing this function.
+
+When working in javascript, use [javascript client](https://confluence.persoo.cz/display/DOC/Javascript+Data+Collection) for sending and receiving request instead of raw API.
+
+Why we support JSONP? It's necessary for javascript client in web browsers,
+which follow CORS restrictions (disallow cross domain requests).
+
+
+# Group Report & Query
+Reporting visitor interactions or querying for personalizations.
+
+HTTP Header params:
+* `referer` (required) ... URL of the web page, which requested personalizations
+* `cookie` (optional) ... used only if third-party cookies are ON.
+
+**Session / non-session modes.** Visitors visits websites in sessions. They typically do a stream of events, ie. view several pages or purchase a product. 
+In session mode, Persoo keeps profile and related data in cache for higher efficiency. Moreover there are other functions related to sessions - call 
+custom workflow on session expiration, calculate data only for current session, etc.
+NOTE: at the moment, requests with identification  "_vid=<visitorID>" uses session mode, 
+other requests with identification "_idType=<idType>&_idValue=<ID>" uses non-session mode.
+
+**Custom parameters.** You can provide arbitrary parameters/fields, but predefined workflows can work only with some of them.
+Each parameter value is JSON. Moreover you can remove the string quotes 
+if the value is not a reserved word (null, true, false) and if it does not start with a digit, '+', '-', '{' or '['.
+Example: `prop1=abc&prop2="xyz"&prop3=123&prop4=1.0&prop5=true` is correct, but following must use quotes, otherwise not interpreted as string
+`prop1="12abc"&prop2="123"&prop3="true"&prop4="null"`.
+
+TODO differences when third-party cookies are on
+
+## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={visitor_id}&_a={agent}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&{custom_fields}]
+Usually, javascript client keeps visitor identification in a cookie and uses JSONP version
+to report visitor interactions and to receive personalizations as HTML fragments.
+
++ Parameters
+    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + environment_id (required, string, `p`) ... ID of an environment. 
+          Production has always ID 'p'. Typically there is also 'test'. 
+          Other IDs may be added during configuration.
+    + visitor_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
+          which identifies browser or device.
+    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
+    
+    + workflow (optional, string, `pageview`) ... Workflow ID. Workflow to process the request.
+    + queryOnly (optional, boolean, `false`) ... Whether the request is meant to update the corresponding visitor profile.
+        or only queries on the profile. Value 'true' doesn't quarantee all workflows become read-only - it's the client's 
+        responsibility to use 'true' only with truly read-only workflows. 
+        NOTE: currently, it must be false in the session mode and true in the non-session mode.
+    + debug (optional, boolean, `false`) ... Whether to include debug information in the response.    
+    + event (optional, string, `pageview`) ... Event name/ID. Typical request to RTP corresponds to visitor event/interaction and carries data about the event.
+    + custom_fields (optional, http params, `prop1=val1&prop2=val2`) ... Fields specified above. See [other fields](#workflow_fields).
+
+### workflow.json [GET]
+
++ Request
+
+    + Headers
+
+            Cookie: persooVID={visitor_id};
+            Referer: http://my.website.com
+
++ Response 200 (application/json)
+    + Body
+    
+            {
+                data: {
+                    "preferredSection": "phones"
+                    "recommendedProductsHP": ["DF523", "AC235", "BZ628"]
+                    "exported": "variables",
+                    "key": "value",
+                    "key2": [1,2,3]
+                },
+                functionCalls: [
+                    {
+                        "function": "myCustomFunction",
+                        "args": ["arg1", "arg2", "arg3"]
+                    }
+                ],
+                exceptions: [
+                   {
+                      "class": "cz.persoo.exception.PersooRuntimeException",
+                      "message": "org.mozilla.javascript.EcmaError: TypeError: Cannot set property \"null\" of null to \"null\" (<init>#1)",
+                      "stackTrace": [
+                        {
+                          "ref": "main",
+                          "step": 0
+                        },
+                        {
+                          "ref": "checkboxes"
+                        }
+                      ]
+                    }
+                ],
+                "setVisitorID": "XADWW4D156SWW3264646SSSDF"
+            }
+
+## Call workflow for visitor by ID [/{account_id}/{environment_id}/workflow.json?_idType={identification_type}&_idValue={identification_value}&_a={agent}&_authKey={auth_key}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&{custom_fields}]
+You can specify visitor by some of his IDs and run a workflow for this visitor.
+
++ Parameters
+    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + environment_id (required, string, `p`) ... ID of an environment. 
+      Production has always ID 'p'. Typically there is also 'test'. 
+      Other IDs may be added during configuration.
+    + identification_type (required, string, `email`) ... Identification type, i.e. "_vid", "email", "userId",...
+    + identification_value (required, string, `my@email.com`) ... Identification value for given type, i.e. email address, userId,...
+    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
+    + auth_key (required, string, `63229b614f8c32afc5e2043d87f9d3c7`) ... Authentization key, which is set in Persoo Administration.
+    
+    
+    + workflow (optional, string, `pageview`) ... Workflow ID. Workflow to process the request.
+    + queryOnly (optional, boolean, `false`) ... Whether the request is meant to update the corresponding visitor profile.
+        or only queries on the profile. Value 'true' doesn't quarantee all workflows become read-only - it's the client's 
+        responsibility to use 'true' only with truly read-only workflows. 
+        NOTE: currently, it must be false in the session mode and true in the non-session mode.
+    + debug (optional, boolean, `false`) ... Whether to include debug information in the response.
+    + event (optional, string, `pageview`) ... Event name/ID. Typical request to RTP corresponds to visitor event/interaction and carries data about the event.
+    + custom_fields (optional, http params, `prop1=val1&prop2=val2`) ... Fields specified above. See [other fields](#workflow_fields).
+
+### workflow.json [GET]
+
++ Request
+
+    + Headers
+        
+            Referer: <http://mywebsite.com>
+            Cookie: AuthToken={token};
+
++ Response 200 (application/json)
+    + Body
+    
+            {
+                data: {
+                    "preferredSection": "phones"
+                    "recommendedProductsHP": ["DF523", "AC235", "BZ628"]
+                    "exported": "variables",
+                    "key": "value",
+                    "key2": [1,2,3]
+                },
+                functionCalls: [
+                    {
+                        "function": "myCustomFunction",
+                        "args": ["arg1", "arg2", "arg3"]
+                    }
+                ],
+                exceptions: [
+                   {
+                      "class": "cz.persoo.exception.PersooRuntimeException",
+                      "message": "org.mozilla.javascript.EcmaError: TypeError: Cannot set property \"null\" of null to \"null\" (<init>#1)",
+                      "stackTrace": [
+                        {
+                          "ref": "main",
+                          "step": 0
+                        },
+                        {
+                          "ref": "checkboxes"
+                        }
+                      ]
+                    }
+                ],
+                "setVisitorID": "XADWW4D156SWW3264646SSSDF"
+            }
+
+# Group For debugging
+To be able to debug or test workflows, there a few helper functions.
+
+## Get visitor profile for current visitor [/{account_id}/{environment_id}/getVisitorSpace.json?_vid={visitor_id}&_a={agent}]
+Returns visitor profile as JSON.
+
++ Parameters
+    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
+    + visitor_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
+          which identifies browser or device.
+    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
+
+
+### GetVisitorSpace.json [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            { "id": 2, "data": "about visitor" }
+            
+## Get visitor profile for visitor by ID [/{account_id}/{environment_id}/getVisitorSpace.json?_idType={identification_type}&_idValue={identification_value}&_a={agent}&_authKey={auth_key}]
+Returns visitor profile as JSON.
+
++ Parameters
+    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
+    + identification_type (required, string, `email`) ... Identification type, i.e. "_vid", "email", "userId",...
+    + identification_value (required, string, `my@email.com`) ... Identification value for given type, i.e. email address, userId,...
+    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
+    + auth_key (required, string, `63229b614f8c32afc5e2043d87f9d3c7`) ... Authentization key, which is set in Persoo Administration.
+
+
+
+### GetVisitorSpace.json [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            { "id": 2, "data": "about visitor" }
+            
+## End session for current visitor [/{account_id}/{environment_id}/endSession?_vid={visitor_id}&_a={agent}]
+Returns visitor profile as JSON.
+
++ Parameters
+    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
+    + visitor_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
+          which identifies browser or device.
+    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
+
+
+### EndSession [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            { "status": "OK" }            
+
+## Reset third party cookies for current visitor [/resetVisitorID]
+Reset third party cookies, that were used as browser identification. Do nothing if third party cookies are switched off for the account.
+
+### ResetVisitorID [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            { "status": "OK" }
+            
+## Health Check [/healthCheck]
+Health check.
+
+### HealthCheck [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            { "healthCheck": "OK" }
+            
