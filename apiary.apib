@@ -110,8 +110,9 @@ HTTP Header params:
 * `cookie` (optional) ... used only if third-party cookies are ON.
 
 **Session / non-session modes.** Visitors visits websites in sessions. They typically do a stream of events, ie. view several pages or purchase a product. 
-In session mode, Persoo keeps profile and related data in cache for higher efficiency. Moreover there are other functions related to sessions - call 
+In session mode, Persoo keeps profile and related data in cache for higher efficiency. Moreover there are other workflows related to a session - call 
 custom workflow on session expiration, calculate data only for current session, etc.
+
 NOTE: at the moment, requests with identification  "_vid=<visitorID>" uses session mode, 
 other requests with identification "_idType=<idType>&_idValue=<ID>" uses non-session mode.
 
