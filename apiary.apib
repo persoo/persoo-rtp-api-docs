@@ -3,39 +3,29 @@ HOST: http://rtp.persoo.cz
 
 
 # Persoo RTP
-Persoo have 2 APIs - one for [administration](http://docs.persoo.apiary.io/) and one for reporting and querying for personalizations.
-Here we describe the second one.
+Persoo has two APIs - one for [administration](http://docs.persoo.apiary.io/) and another for reporting web visitors behavior and querying for the recommended web personalizations. Here we describe the second one.
 
-Real-time processing unit (RTP) is a worker in the cloud, that process requests reported from browsers or webservers
-and as a response provides data for personalizations.
+Real-time processing unit (RTP) is the worker of the Persoo cloud that processes requests reported from browsers or web servers and provides data for personalizations in response.
 
 
 ## How Persoo works
-Create an account in Persoo, provide product exports (i.e. by XML feed), add Persoo javascript loader 
-to your webpages and do the rest in Persoo Administraton. (TODO add registration link).
+Create your account in Persoo, provide products and categories exports (e.g., by a XML feed), add the Persoo JavaScript loader to your webpages, and configure the rest in the Persoo administration.
 
-### Levels of integration
+### Ways of integration
 
-There are 2 levels of Persoo integration
-* **javascript** - your webserver do not need to know about Persoo. Everything is realized 
-  through [javascript client](https://confluence.persoo.cz/display/DOC/Javascript+Data+Collection)
-  which reports data, receives personalizations as HTML fragments and displays them on correct locations. Personalizations
-  are added to a page as dynamic HTML fragments (similarly to Ajax, but works also cross domain).
+There are two ways to integrate Persoo in your web:
+* **JavaScript** - your web server need not know about Persoo. Everything is realized through [JavaScript client](https://confluence.persoo.cz/display/DOC/Javascript+Data+Collection) which reports data, receives personalizations as HTML fragments and displays them in the appropriate locations. Personalizations are added to a page as dynamic HTML fragments (similarly to AJAX, but it works also cross domain).
 
-* **webserver** - your webserver is responsible for keeping visitor/browser identification. Reports
-  data with visitor behavior and receives personalizations as JSON. 
-  It is his responsibility to render the data to HTML, or even to decide how to use them.
+* **Web server** - your web server is responsible for tracking the visitor/browser identification. It reports visitors behavior and receives personalizations in the JSON format. It is its responsibility to render the received data to HTML or even to decide how to use them.
 
-You can combine both ways - webserver renders personalizations itself, because final HTML loads faster 
-in browsers, but data about offer impressions, clicks, and dynamic ajax events are reported
-through javascript client.
+You can combine both ways - your web server renders the personalizations by itself to have the web pages loaded faster in browsers; but the data about offer impressions, clicks, and dynamic AJAX events are reported through the JavaScript client.
 
 ### Report data and query for personalizations
 
 In Persoo, both is processed in real time in one request:
 
-1. **Report data** --- webserver or javascript in browser reports data about visitor interactions. ,
-   i.e. visitor with cookie "ABC" did event "pageview", because he viewed "detail" 
+1. **Report data** --- webserver or javascript in browser reports data about visitor interactions.
+   I.e., visitor with cookie "ABC" did event "pageview", because he viewed "detail" 
    page of product "prod123" from category "catXYZ". Server process reported data in real time before sending response.
 2. **Query for personalizations/recommendations** --- as a response, RTP returns personalizactionns
    related to product "detail" page, i.e. recommendation, personalized banners,...
