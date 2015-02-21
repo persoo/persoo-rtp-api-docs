@@ -7,6 +7,11 @@ Persoo has two APIs - one for [administration](http://docs.persoo.apiary.io/) an
 
 Real-time processing unit (RTP) is the worker of the Persoo cloud that processes requests reported from browsers or web servers and provides data for personalizations in response.
 
+### Terminology
+
+* **Visitor** - real website visitor. He uses several browsers or devices identified by VID (Visitor ID, i.e. cookie), has email address, user ID, etc.
+* **Client** - owner of the website.
+* **User** - someone configuring Persoo for a client.
 
 ## How Persoo works
 Create your account in Persoo, provide products and categories exports (e.g., by a XML feed), add the Persoo JavaScript loader to your webpages, and configure the rest in the Persoo administration.
@@ -47,6 +52,13 @@ from a particular recommendation scenario.
 
 TODO predefined workflows, events, parameters they need (dataLayers specification).
 
+* `main({event:<string>, params...})`
+ * event `pageview({pageType: <string>, itemID: <string>, categoryID: <string>, hierarchy: <string>, transaction: <JSON>, basketTotal: <number>, basketItems: <JSON>})`
+ * event `addToCart({itemID: <string>})`
+ 
+* `getScenario({scenarioID: <string>, count: <integer>})`
+* `getAlgorithm({algorithmID: <string>, count: <integer>})`
+
 ### Visitor identifications
 
 Visitor in Persoo corresponds to a real person. Visitor may use several **browsers or devices.** 
@@ -59,13 +71,6 @@ are in Persoo represented by pairs **[idType, idValue]**, i.e. [email, hello@per
 You only need to report identification to Persoo and it does the rest for you -- calculate equivalence
 classes with certain probability, merging visitor profiles, or even spliting visitor profiles when
 it is necessary to correct an equivalence class.
-
-
-### Terminology
-
-* **Visitor** - real website visitor. He uses several browsers or devices identified by VID (Visitor ID, i.e. cookie), has email address, user ID, etc.
-* **Client** - owner of the website.
-* **User** - someone configuring Persoo for a client.
 
 ## Technical
 
