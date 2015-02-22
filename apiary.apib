@@ -57,7 +57,11 @@ TODO predefined workflows, events, parameters they need (dataLayers specificatio
  * event `addToCart({itemID: <string>})`
  * event `removeItem({itemID: <string>})` ... remove item form viewed and thus preferred items.
  
-* `getScenario({scenarioID: <string>, count: <integer>})`
+* `getScenario({scenarioID: <string>})` with optional arguments:
+ * `itemID: <string>` (optional) item for item based recommendations (currently viewed item)
+ * `categoryID: <string>` (optional) category for category based recommendations (currently viewed category)
+ * `count: <integer>` (optional) items to return
+ 
 * `getAlgorithm({algorithmID: <string>, count: <integer>})` - TODO
 
 ### Visitor identifications
