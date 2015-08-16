@@ -55,6 +55,7 @@ TODO predefined workflows, events, parameters they need (dataLayers specificatio
 * `main({event:<string>, params...})`
  * event `pageview({pageType: <string>, itemID: <string>, categoryID: <string>, hierarchy: <string>, transaction: <JSON>, basketTotal: <number>, basketItems: <JSON>})`
    `rawData: <boolean>` (optional) return raw data as list of recommended products, too.
+   `idsOnly: <boolean>` (optional) return only product ids, not product items (metadata).
  * event `addToBasket({itemID: <string>})`
  * event `removeItem({itemID: <string>})` ... remove item form viewed and thus preferred items.
  
@@ -62,6 +63,7 @@ TODO predefined workflows, events, parameters they need (dataLayers specificatio
  * `itemID: <string>` (optional) item for item based recommendations (currently viewed item)
  * `categoryID: <string>` (optional) category for category based recommendations (currently viewed category)
  * `count: <integer>` (optional) maximum number of items to return
+ * `idsOnly: <boolean>` (optional) return only product ids, not product items (metadata).
  
 * `getAlgorithm({algorithmID: <string>})` with optional arguments:
  * `itemID: <string>` (optional) item for item based recommendations (currently viewed item)
