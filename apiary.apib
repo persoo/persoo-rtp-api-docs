@@ -346,3 +346,123 @@ Health check.
 
             { "healthCheck": "OK" }
             
+# Group Examples
+Here we show a few examples, which might be useful at your web server.
+* `getScenario(scenarioID)` - to get recommendations from given scenario
+* `reportDataAndGetScenariosByPageType(pageType, itemID, categoryID)` - to report pageview and retrieve all recommendations related to the pageType
+
+## getScenario [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getScenario&_queryOnly=false&_debug=false&_w=getScenario&scenarioID={scenario_id}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
+Return itemIDs for given scenarioID. You can find available scenarioIDs for you account in persoo administration (scenarioID are in URL) or you can create new one.
+
+Scenario might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
+For example at homepage, you do not need context, at product detail you should provide itemID of viewed product, its categoryID and its hierarchy.
+
++ Parameters
+    + account_id_1 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
+    + environment_id (required, string, `p`) ... ID of an environment. 
+          Production has always ID 'p'. Typically there is also 'test'. 
+          Other IDs may be added during configuration.
+    + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
+          which identifies browser or device.
+
+    + scenario_id (required, string, `hpRecommend`) ... Scenario ID (as you find in url in Persoo administration).
+    + ids_only (optional, boolean, `true`) ... return only list of IDs or return also all product metadata. Default is false.
+    + count (optional, number, `5`) ... number of recommended products in response.
+    + item_id (optional, string, `MYITEMID`) ... itemID if scenarion context requires it
+    + category_id (optional, string, `MYCATEGORYID`) ... cagoryID if scenarion context requires it
+
+### getScenario [GET]
+
++ Request
+
+    + Headers
+
+            Cookie: persooVID={visitor_id};
+            Referer: http://my.website.com
+
++ Response 200 (application/json)
+    + Body
+    
+            {
+              "data": {
+                "ids": [
+                  "11564",
+                  "12151",
+                  "11570",
+                  "12198",
+                  "12854"
+                ]
+              },
+              "exceptions": [],
+              "functionCalls": []
+            }
+
+## getScenariosByPageType [/{account_id_2}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=pageview&_queryOnly=false&_debug=false&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}]
+Report data about pageview and get all scenarios for the page in one request.
+
+Return itemIDs for given scenarioID. You can find available scenarioIDs for you account in persoo administration (scenarioID are in URL) or you can create new one.
+
+Scenario might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
+For example at homepage, you do not need context, at product detail you should provide itemID of viewed product, its categoryID and its hierarchy.
+
++ Parameters
+    + account_id_2 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
+    + environment_id (required, string, `p`) ... ID of an environment. 
+          Production has always ID 'p'. Typically there is also 'test'. 
+          Other IDs may be added during configuration.
+    + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
+          which identifies browser or device.
+
+    + page_type (required, string, `homepage`) ... pageTypes (as you have in dataLayer and also defined in settings in Persoo administration).
+    + item_id (optional, string, `MYITEMID`) ... itemID if scenarion context requires it
+    + category_id (optional, string, `MYCATEGORYID`) ... cagoryID if scenarion context requires it
+
+    + raw_data (optional, boolean, `true`) ... return list of IDs and not only rendered HTML fragments
+    + ids_only (optional, boolean, `true`) ... return only list of IDs or return also all product metadata. Default is false.
+
+### getScenariosByPageType [GET]
+
++ Request
+
+    + Headers
+
+            Cookie: persooVID={visitor_id};
+            Referer: http://my.website.com
+
++ Response 200 (application/json)
+    + Body
+    
+            {
+              "data": {
+                "ids": [
+                  "11564",
+                  "12151",
+                  "11570",
+                  "12198",
+                  "12854"
+                ]
+              },
+              "exceptions": [],
+              "functionCalls": []
+            }
+
+## getVisitorProfile [/{account_id_1}/{environment_id}/getVisitorSpace.json?_vid={visitor_id}&_a=my-server-3]
+Returns visitor profile as JSON. 
+Visitor profile contains
+* db part - data about use stored in DB
+* tmp part - data computed from db part, session statistics and session related data (i.e. landing page, campaign), fetched products, categories data, scenarios,...
+See [what data can I find in visitor profile](https://confluence.persoo.cz/pages/viewpage.action?pageId=42270728) (in czech)
+
++ Parameters
+    + account_id_1 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
+    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
+    + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
+          which identifies browser or device.
+
+
+### getVisitorSpace.json [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            { "id": 2, "data": "about visitor" }
