@@ -135,7 +135,7 @@ Example: `prop1=abc&prop2="xyz"&prop3=123&prop4=1.0&prop5=true` is correct, but 
 
 TODO differences when third-party cookies are on
 
-## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={visitor_id}&_a={agent}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&{custom_fields}]
+## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={visitor_id}&_a={agent}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
 Usually, javascript client keeps visitor identification in a cookie and uses JSONP version
 to report visitor interactions and to receive personalizations as HTML fragments.
 
@@ -155,7 +155,18 @@ to report visitor interactions and to receive personalizations as HTML fragments
         NOTE: currently, it must be false in the session mode and true in the non-session mode.
     + debug (optional, boolean, `false`) ... Whether to include debug information in the response.    
     + event (optional, string, `pageview`) ... Event name/ID. Typical request to RTP corresponds to visitor event/interaction and carries data about the event.
-    + custom_fields (optional, http params, `prop1=val1&prop2=val2`) ... Fields specified above. See [other fields](#workflow_fields).
+    
+
+    + raw_data (optional, boolean, `true`) ... Whether to return also raw recommendation data as list of recommended products with its metadata. Not only HTML fragmetns.
+    + ids_only (optional, boolean, `true`) ... Extends "rawData" atribute: Whether itemIDs only or all product metadata. Default is false.
+    
+    + page_type (required, string, `homepage`) ... pageTypes (as you have in dataLayer and also defined in settings in Persoo administration).
+    + item_id (optional, string, `PROD001`) ... Context: event is related to product with given itemID.
+    + category_id (optional, string, `Smart phones`) ... Context: event is related to category with given categoryID.
+    + hierarchy (optional, string, `Electonics:Phones:Smart phones`) ... Context: category hierarchy as given in page breadcrumb.
+    + customfields (optional, string, `customField=customValue`) ... Your custom fields. See [other fields](#workflow_fields)
+    
+
 
 ### workflow.json [GET]
 
@@ -201,7 +212,7 @@ to report visitor interactions and to receive personalizations as HTML fragments
                 "setVisitorID": "XADWW4D156SWW3264646SSSDF"
             }
 
-## Call workflow for visitor by ID [/{account_id}/{environment_id}/workflow.json?_idType={identification_type}&_idValue={identification_value}&_a={agent}&_authKey={auth_key}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&{custom_fields}]
+## Call workflow for visitor by ID [/{account_id}/{environment_id}/workflow.json?_idType={identification_type}&_idValue={identification_value}&_a={agent}&_authKey={auth_key}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
 You can specify visitor by some of his IDs and run a workflow for this visitor.
 
 + Parameters
@@ -209,7 +220,7 @@ You can specify visitor by some of his IDs and run a workflow for this visitor.
     + environment_id (required, string, `p`) ... ID of an environment. 
       Production has always ID 'p'. Typically there is also 'test'. 
       Other IDs may be added during configuration.
-    + identification_type (required, string, `email`) ... Identification type, i.e. "_vid", "email", "userId",...
+    + identification_type (required, string, `email`) ... Identification type, i.e. "browserID", "email", "userId",...
     + identification_value (required, string, `my@email.com`) ... Identification value for given type, i.e. email address, userId,...
     + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
     + auth_key (required, string, `63229b614f8c32afc5e2043d87f9d3c7`) ... Authentization key, which is set in Persoo Administration.
@@ -222,7 +233,16 @@ You can specify visitor by some of his IDs and run a workflow for this visitor.
         NOTE: currently, it must be false in the session mode and true in the non-session mode.
     + debug (optional, boolean, `false`) ... Whether to include debug information in the response.
     + event (optional, string, `pageview`) ... Event name/ID. Typical request to RTP corresponds to visitor event/interaction and carries data about the event.
-    + custom_fields (optional, http params, `prop1=val1&prop2=val2`) ... Fields specified above. See [other fields](#workflow_fields).
+
+    + raw_data (optional, boolean, `true`) ... Whether to return also raw recommendation data as list of recommended products with its metadata. Not only HTML fragmetns.
+    + ids_only (optional, boolean, `true`) ... Extends "rawData" atribute: Whether itemIDs only or all product metadata. Default is false.
+    
+    + page_type (required, string, `homepage`) ... pageTypes (as you have in dataLayer and also defined in settings in Persoo administration).
+    + item_id (optional, string, `PROD001`) ... Context: event is related to product with given itemID.
+    + category_id (optional, string, `Smart phones`) ... Context: event is related to category with given categoryID.
+    + hierarchy (optional, string, `Electonics:Phones:Smart phones`) ... Context: category hierarchy as given in page breadcrumb.
+    + customfields (optional, string, `customField=customValue`) ... Your custom fields. See [other fields](#workflow_fields)
+    
 
 ### workflow.json [GET]
 
@@ -294,7 +314,7 @@ Returns visitor profile as JSON.
 + Parameters
     + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
     + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
-    + identification_type (required, string, `email`) ... Identification type, i.e. "_vid", "email", "userId",...
+    + identification_type (required, string, `email`) ... Identification type, i.e. "BrowserID", "email", "userId",...
     + identification_value (required, string, `my@email.com`) ... Identification value for given type, i.e. email address, userId,...
     + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
     + auth_key (required, string, `63229b614f8c32afc5e2043d87f9d3c7`) ... Authentization key, which is set in Persoo Administration.
@@ -397,7 +417,7 @@ For example at homepage, you do not need context, at product detail you should p
               "functionCalls": []
             }
 
-## getScenariosByPageType [/{account_id_2}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=pageview&_queryOnly=false&_debug=false&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}]
+## getScenariosByPageType [/{account_id2}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=pageview&_queryOnly=false&_debug=false&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}]
 Report data about pageview and get all scenarios for the page in one request.
 
 Return itemIDs for given scenarioID. You can find available scenarioIDs for you account in persoo administration (scenarioID are in URL) or you can create new one.
@@ -406,7 +426,7 @@ Scenario might need a context to provide recommendations related to an itemID/ca
 For example at homepage, you do not need context, at product detail you should provide itemID of viewed product, its categoryID and its hierarchy.
 
 + Parameters
-    + account_id_2 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
+    + account_id2 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
     + environment_id (required, string, `p`) ... ID of an environment. 
           Production has always ID 'p'. Typically there is also 'test'. 
           Other IDs may be added during configuration.
@@ -414,11 +434,12 @@ For example at homepage, you do not need context, at product detail you should p
           which identifies browser or device.
 
     + page_type (required, string, `homepage`) ... pageTypes (as you have in dataLayer and also defined in settings in Persoo administration).
-    + item_id (optional, string, `MYITEMID`) ... itemID if scenarion context requires it
-    + category_id (optional, string, `MYCATEGORYID`) ... cagoryID if scenarion context requires it
-
-    + raw_data (optional, boolean, `true`) ... return list of IDs and not only rendered HTML fragments
-    + ids_only (optional, boolean, `true`) ... return only list of IDs or return also all product metadata. Default is false.
+    + item_id (optional, string, `PROD001`) ... Context: event is related to product with given itemID.
+    + category_id (optional, string, `Smart phones`) ... Context: event is related to category with given categoryID.
+    + hierarchy (optional, string, `Electonics:Phones:Smart phones`) ... Context: category hierarchy as given in page breadcrumb.
+    
+    + raw_data (optional, boolean, `true`) ... Whether to return also raw recommendation data as list of recommended products with its metadata. Not only HTML fragmetns.
+    + ids_only (optional, boolean, `true`) ... Extends "rawData" atribute: Whether itemIDs only or all product metadata. Default is false.
 
 ### getScenariosByPageType [GET]
 
