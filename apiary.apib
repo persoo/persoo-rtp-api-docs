@@ -59,13 +59,13 @@ TODO predefined workflows, events, parameters they need (dataLayers specificatio
  * event `addToBasket({itemID: <string>})`
  * event `removeItem({itemID: <string>})` ... remove item form viewed and thus preferred items.
  
-* `getScenario({scenarioID: <string>})` with optional arguments:
+* event `getScenario({scenarioID: <string>})` with optional arguments:
  * `itemID: <string>` (optional) item for item based recommendations (currently viewed item)
  * `categoryID: <string>` (optional) category for category based recommendations (currently viewed category)
  * `count: <integer>` (optional) maximum number of items to return
  * `idsOnly: <boolean>` (optional) return only product ids, not product items (metadata).
  
-* `getAlgorithm({algorithmID: <string>})` with optional arguments:
+* event `getAlgorithm({algorithmID: <string>})` with optional arguments:
  * `itemID: <string>` (optional) item for item based recommendations (currently viewed item)
  * `categoryID: <string>` (optional) category for category based recommendations (currently viewed category)
  * `count: <integer>` (optional) maximum number of items to return (Note: some algorithms temporarily returns 30 items)
@@ -405,7 +405,7 @@ Here we show a few examples, which might be useful at your web server.
 * `getScenario(scenarioID)` - to get recommendations from given scenario
 * `reportDataAndGetScenariosByPageType(pageType, itemID, categoryID)` - to report pageview and retrieve all recommendations related to the pageType
 
-## getScenario [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getScenario&_queryOnly=false&_debug=false&_w=getScenario&scenarioID={scenario_id}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
+## getScenario [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getScenario&_queryOnly=false&_debug=false&scenarioID={scenario_id}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
 Return itemIDs for given scenarioID. You can find available scenarioIDs for you account in persoo administration (scenarioID are in URL) or you can create new one.
 
 Scenario might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
