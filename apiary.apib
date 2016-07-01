@@ -321,6 +321,29 @@ You can specify visitor by some of his IDs and run a workflow for this visitor.
                 "setVisitorID": "XADWW4D156SWW3264646SSSDF"
             }
 
+## Alias identification [/{account_id}/{environment_id}/alias.json?idType={id_type}&idValue={id_value}&aliases={aliases}&_a={agent}]
+Add aliases to an identification. For example if you have login and email, or email and subscriberId, 
+you can report the aliases for which **you must be 100% sure they correspond to the same person.**
+
+Persoo will merge corresponding visitor profiles (if they already exists) and later on, 
+new anonymous browsers can be identified by any of these identifications.
+
++ Parameters
+    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
+    + id_type (required, string, `email`) ... main identification type. 
+    + id_value (required, string, `my@email.com`) ... main identification value.
+    + aliases (required, string, `userID:123,phone:777777777`) ... comma separated identification pairs, each pair has format <idType>:<idValue>. 
+    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
+
+
+### alias.json [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            { "status": "OK" }
+
 # Group For debugging
 To be able to debug or test workflows, there a few helper functions.
 
@@ -335,7 +358,7 @@ Returns visitor profile as JSON.
     + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
 
 
-### GetVisitorSpace.json [GET]
+### getVisitorSpace.json [GET]
 + Response 200 (application/json)
 
     + Body
@@ -355,7 +378,7 @@ Returns visitor profile as JSON.
 
 
 
-### GetVisitorSpace.json [GET]
+### getVisitorSpace.json [GET]
 + Response 200 (application/json)
 
     + Body
@@ -373,27 +396,27 @@ Returns visitor profile as JSON.
     + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
 
 
-### EndSession [GET]
+### endSession.json [GET]
 + Response 200 (application/json)
 
     + Body
 
             { "status": "OK" }            
 
-## Reset third party cookies for current visitor [/resetVisitorID]
+## Clear third party cookies for current visitor [/clearBrowserID.json]
 Reset third party cookies, that were used as browser identification. Do nothing if third party cookies are switched off for the account.
 
-### ResetVisitorID [GET]
+### clearBrowserID.json [GET]
 + Response 200 (application/json)
 
     + Body
 
             { "status": "OK" }
             
-## Health Check [/healthCheck]
+## Health Check [/healthCheck.json]
 Health check.
 
-### HealthCheck [GET]
+### healthCheck.json [GET]
 + Response 200 (application/json)
 
     + Body
