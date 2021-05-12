@@ -1,5 +1,5 @@
 FORMAT: 1A
-HOST: http://rtp.persoo.cz
+HOST: http://rtp.persoo.ai
 
 
 # Persoo RTP API
@@ -52,7 +52,6 @@ from a particular recommendation scenario.
 
 TODO predefined workflows, events, parameters they need (dataLayers specification).
 
-* `main({event:<string>, params...})`
  * event `pageview({pageType: <string>, itemID: <string>, categoryID: <string>, hierarchy: <string>, transaction: <JSON>, basketTotal: <number>, basketItems: <JSON>})`
    `rawData: <boolean>` (optional) return raw data as list of recommended products, too.
    `idsOnly: <boolean>` (optional) return only product ids, not product items (metadata).
@@ -135,7 +134,7 @@ Example: `prop1=abc&prop2="xyz"&prop3=123&prop4=1.0&prop5=true` is correct, but 
 
 TODO differences when third-party cookies are on
 
-## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={visitor_id}&_a={agent}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
+## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={browser_id}&_a={agent}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
 Usually, javascript client keeps visitor identification in a cookie and uses JSONP version
 to report visitor interactions and to receive personalizations as HTML fragments.
 
@@ -144,7 +143,7 @@ to report visitor interactions and to receive personalizations as HTML fragments
     + environment_id (required, string, `p`) ... ID of an environment. 
           Production has always ID 'p'. Typically there is also 'test'. 
           Other IDs may be added during configuration.
-    + visitor_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
+    + browser_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
           which identifies browser or device.
     + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
     
@@ -229,8 +228,10 @@ to report visitor interactions and to receive personalizations as HTML fragments
                 "setVisitorID": "XADWW4D156SWW3264646SSSDF"
             }
 
-## Call workflow for visitor by ID [/{account_id}/{environment_id}/workflow.json?_idType={identification_type}&_idValue={identification_value}&_a={agent}&_authKey={auth_key}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
+## Call workflow for visitor by ID [/{account_id}/{environment_id}/workflow.json?idType={identification_type}&idValue={identification_value}&_a={agent}&_authKey=%22{auth_key}%22&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
 You can specify visitor by some of his IDs and run a workflow for this visitor.
+
+Note: 'Bad Request' may mean, that you are not authorized. That you are using wrong authentication key. For well authenticated request you will see more informative error messages.
 
 + Parameters
     + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
@@ -321,6 +322,7 @@ You can specify visitor by some of his IDs and run a workflow for this visitor.
                 "setVisitorID": "XADWW4D156SWW3264646SSSDF"
             }
 
+
 ## Alias identification [/{account_id}/{environment_id}/alias.json?idType={id_type}&idValue={id_value}&aliases={aliases}&_a={agent}]
 Add aliases to an identification. For example if you have login and email, or email and subscriberId, 
 you can report the aliases for which **you must be 100% sure they correspond to the same person.**
@@ -365,7 +367,7 @@ Returns visitor profile as JSON.
 
             { "id": 2, "data": "about visitor" }
             
-## Get visitor profile for visitor by ID [/{account_id}/{environment_id}/getVisitorSpace.json?_idType={identification_type}&_idValue={identification_value}&_a={agent}&_authKey={auth_key}]
+## Get visitor profile for visitor by ID [/{account_id}/{environment_id}/getVisitorSpace.json?idType={identification_type}&idValue={identification_value}&_a={agent}&_authKey=%22{auth_key}%22]
 Returns visitor profile as JSON.
 
 + Parameters
@@ -425,8 +427,105 @@ Health check.
             
 # Group Examples
 Here we show a few examples, which might be useful at your web server.
-* `getScenario(scenarioID)` - to get recommendations from given scenario
+* `getScenario(scenarioID)` - (to be deprecated soon) to get recommendations from given scenario
+* `getRecommendation(algorithmID)` - to get recommendations from given recommendation algorithm, supports new features like various tables (products, categories,...), aggregations,... But mixer algorithm si not implemented yet, so still you need to use Scenarios.
 * `reportDataAndGetScenariosByPageType(pageType, itemID, categoryID)` - to report pageview and retrieve all recommendations related to the pageType
+
+
+## getRecommendation [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getRecommendation&_queryOnly=false&_debug=false&algorithmID={algorithm_id}&itemsPerPage={items_per_page}&page={page}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
+Return items and aggregations for given recommendation algorithm. Allows to specify data table, in which generate recommendation, included fields to return only fields you need to minimize data traffic,... 
+
+Algorithm might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
+For example at homepage, you do not need context, at product detail you should provide itemID of viewed product, its categoryID and its hierarchy.
+
++ Parameters
+    + account_id_1 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
+    + environment_id (required, string, `p`) ... ID of an environment. 
+          Production has always ID 'p'. Typically there is also 'test'. 
+          Other IDs may be added during configuration.
+    + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
+          which identifies browser or device.
+
+    + algorithm_id (required, string, `psGeneral`) ... Algorithm ID (as you find in url in Persoo administration).
+    + items_per_page (optional, number, `3`) ... number of products in response (on given page) or simply max count of returned products
+    + page (optional, number, `0`) ... page number in case you want to show all pages with results
+    + ids_only (optional, boolean, `true`) ... return only list of IDs or return also all product metadata. Default is false.
+    + item_id (optional, string, `MYITEMID`) ... itemID if scenarion context requires it
+    + category_id (optional, string, `MYCATEGORYID`) ... categoryID if scenarion context requires it
+
+### getRecommendation [GET]
+
++ Request
+
+    + Headers
+
+            Cookie: persooVID={visitor_id};
+            Referer: http://my.website.com
+
++ Response 200 (application/json)
+    + Body
+    
+            {
+                "data": {
+                    "aggregations": {
+                        "brand": {
+                            "terms": [
+                                {
+                                    "count": 83,
+                                    "value": "VANS"
+                                },
+                                {
+                                    "count": 4,
+                                    "value": "Mitchell & Ness"
+                                }
+                            ]
+                        },
+                        "price": {
+                            "numeric": {
+                                "avg": 1363.3333333333333,
+                                "max": 5990.0,
+                                "min": 250.0
+                            }
+                        }
+                    },
+                    "itemFieldValues": {
+                        "brand": [
+                            "VANS"
+                        ]
+                    },
+                    "items": [
+                        {
+                            "_algorithmSource": "d21d8acbea3a4d539e2ef68adf7189e6",
+                            "available": 2,
+                            "brand": "VANS",
+                            "categoryID": "batohy",
+                            "description": "Batoh VANS Realm Surf Geo",
+                            "hierarchy": [
+                                "Dopl\u0148ky:Batohy"
+                            ],
+                            "imageLink": "https://persoo.cz/5655f404d6437100.jpg",
+                            "itemGroupID": "21290",
+                            "itemID": "VNS090",
+                            "link": "https://persoo.cz/21290-batoh-vans-realm-surf-geo/",
+                            "price": 890.0,
+                            "priceOriginal": 890.0,
+                            "productType": "Batohy",
+                            "title": "Batoh VANS Realm Surf Geo "
+                        }
+                    ],
+                    "itemsCount": 99,
+                    "itemsPerPage": 1,
+                    "page": 0,
+                    "pagesCount": 99,
+                    "table": "products"
+                },
+                "exceptions": [
+                ],
+                "functionCalls": [
+                ]
+            }
+            
+
 
 ## getScenario [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getScenario&_queryOnly=false&_debug=false&scenarioID={scenario_id}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
 Return itemIDs for given scenarioID. You can find available scenarioIDs for you account in persoo administration (scenarioID are in URL) or you can create new one.
