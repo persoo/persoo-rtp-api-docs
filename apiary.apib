@@ -134,7 +134,7 @@ Example: `prop1=abc&prop2="xyz"&prop3=123&prop4=1.0&prop5=true` is correct, but 
 
 TODO differences when third-party cookies are on
 
-## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={browser_id}&_a={agent}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
+## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={browser_id}&_a={agent}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&sortByField={sortby_field}&sortOrder={sort_order}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
 Usually, javascript client keeps visitor identification in a cookie and uses JSONP version
 to report visitor interactions and to receive personalizations as HTML fragments.
 
@@ -157,6 +157,8 @@ to report visitor interactions and to receive personalizations as HTML fragments
     
 
     + raw_data (optional, boolean, `true`) ... Whether to return also raw recommendation data as list of recommended products with its metadata. Not only HTML fragmetns.
+    + sortby_field (optional, string, `price`) ... Any numeric attribute of the returned item. This sorting overrides default ordering calculated by the algorithm.
+    + sort_order (optional, string, `asc`) ... Specifies ascending or descending sort order. Accepts 'asc' and 'desc'.
     + ids_only (optional, boolean, `true`) ... Extends "rawData" atribute: Whether itemIDs only or all product metadata. Default is false.
     
     + page_type (required, string, `homepage`) ... pageTypes (as you have in dataLayer and also defined in settings in Persoo administration).
