@@ -440,6 +440,8 @@ Return items and aggregations for given recommendation algorithm. Allows to spec
 Algorithm might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
 For example at homepage, you do not need context, at product detail you should provide itemID of viewed product, its categoryID and its hierarchy.
 
+In `idsOnly` mode you get requested ids in `data.itemFieldValues.itemID` or `data.itemFieldValues.itemGroupID`. It depends which ID you need. 
+
 + Parameters
     + account_id_1 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
     + environment_id (required, string, `p`) ... ID of an environment. 
@@ -454,7 +456,7 @@ For example at homepage, you do not need context, at product detail you should p
     + ids_only (optional, boolean, `true`) ... return only list of IDs or return also all product metadata. Default is false.
     + item_id (optional, string, `MYITEMID`) ... itemID if scenarion context requires it
     + category_id (optional, string, `MYCATEGORYID`) ... categoryID if scenarion context requires it
-
+    
 ### getRecommendation [GET]
 
 + Request
@@ -491,9 +493,9 @@ For example at homepage, you do not need context, at product detail you should p
                         }
                     },
                     "itemFieldValues": {
-                        "brand": [
-                            "VANS"
-                        ]
+                        "brand": ["VANS"],
+                        "itemID": ["VNS090"],
+                        "itemGroupID": ["21290"]
                     },
                     "items": [
                         {
