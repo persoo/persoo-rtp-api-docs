@@ -43,7 +43,7 @@ almost empty response, just as a confirmation.
 
 ### Workflows for request processing
 
-RTP requests are processed by **workflows**. Main workflow is designed to processed **events**
+RTP requests are processed by **workflows**. Requests have 10s **timeout** after which the server responds with error 500. Main workflow is designed to processed **events**
 from a website, i.e. "pageview", "addToCart", "statistics" events. Workflows can call other
 workflows as sub-workflows, or even use conditions or change arguments for workflow calls.
 
