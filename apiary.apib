@@ -139,7 +139,7 @@ Usually, javascript client keeps visitor identification in a cookie and uses JSO
 to report visitor interactions and to receive personalizations as HTML fragments.
 
 + Parameters
-    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
     + environment_id (required, string, `p`) ... ID of an environment. 
           Production has always ID 'p'. Typically there is also 'test'. 
           Other IDs may be added during configuration.
@@ -236,7 +236,7 @@ You can specify visitor by some of his IDs and run a workflow for this visitor.
 Note: 'Bad Request' may mean, that you are not authorized. That you are using wrong authentication key. For well authenticated request you will see more informative error messages.
 
 + Parameters
-    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
     + environment_id (required, string, `p`) ... ID of an environment. 
       Production has always ID 'p'. Typically there is also 'test'. 
       Other IDs may be added during configuration.
@@ -333,7 +333,7 @@ Persoo will merge corresponding visitor profiles (if they already exists) and la
 new anonymous browsers can be identified by any of these identifications.
 
 + Parameters
-    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
     + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
     + id_type (required, string, `email`) ... main identification type. 
     + id_value (required, string, `my@email.com`) ... main identification value.
@@ -355,7 +355,7 @@ To be able to debug or test workflows, there a few helper functions.
 Returns visitor profile as JSON.
 
 + Parameters
-    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
     + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
     + visitor_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
           which identifies browser or device.
@@ -373,7 +373,7 @@ Returns visitor profile as JSON.
 Returns visitor profile as JSON.
 
 + Parameters
-    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
     + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
     + identification_type (required, string, `email`) ... Identification type, i.e. "BrowserID", "email", "userId",...
     + identification_value (required, string, `my@email.com`) ... Identification value for given type, i.e. email address, userId,...
@@ -393,7 +393,7 @@ Returns visitor profile as JSON.
 Returns visitor profile as JSON.
 
 + Parameters
-    + account_id (required, string, `h1kivl4j11e9li9ev8t14e1r`) ... ID of an account.
+    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
     + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
     + visitor_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
           which identifies browser or device.
@@ -434,7 +434,7 @@ Here we show a few examples, which might be useful at your web server.
 * `reportDataAndGetScenariosByPageType(pageType, itemID, categoryID)` - to report pageview and retrieve all recommendations related to the pageType
 
 
-## getRecommendation [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getRecommendation&_queryOnly=false&_debug=false&algorithmID={algorithm_id}&itemsPerPage={items_per_page}&page={page}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
+## getRecommendation [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getRecommendation&_url={referrer_url}&_queryOnly=false&_debug=false&algorithmID={algorithm_id}&itemsPerPage={items_per_page}&page={page}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
 Return items and aggregations for given recommendation algorithm. Allows to specify data table, in which generate recommendation, included fields to return only fields you need to minimize data traffic,... 
 
 Algorithm might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
@@ -449,6 +449,7 @@ In `idsOnly` mode you get requested ids in `data.itemFieldValues.itemID` or `dat
           Other IDs may be added during configuration.
     + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
           which identifies browser or device.
+    + referrer_url (required, string, `www.somewebsite.com`) ... url of the page sending request
 
     + algorithm_id (required, string, `psGeneral`) ... Algorithm ID (as you find in url in Persoo administration).
     + items_per_page (optional, number, `3`) ... number of products in response (on given page) or simply max count of returned products
