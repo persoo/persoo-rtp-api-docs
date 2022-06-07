@@ -134,7 +134,7 @@ Example: `prop1=abc&prop2="xyz"&prop3=123&prop4=1.0&prop5=true` is correct, but 
 
 TODO differences when third-party cookies are on
 
-## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={browser_id}&_a={agent}&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&sortByField={sortby_field}&sortOrder={sort_order}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
+## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={browser_id}&_a={agent}&_e={event}&_w={workflow}&_url={referring_page}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&sortByField={sortby_field}&sortOrder={sort_order}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
 Usually, javascript client keeps visitor identification in a cookie and uses JSONP version
 to report visitor interactions and to receive personalizations as HTML fragments.
 
@@ -148,6 +148,7 @@ to report visitor interactions and to receive personalizations as HTML fragments
     + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
     
     + workflow (optional, string, `pageview`) ... Workflow ID. Workflow to process the request.
+    + referring_page (required, string, `https://mywebsite.com`) ... URL of the requesting page
     + queryOnly (optional, boolean, `false`) ... Whether the request is meant to update the corresponding visitor profile.
         or only queries on the profile. Value 'true' doesn't quarantee all workflows become read-only - it's the client's 
         responsibility to use 'true' only with truly read-only workflows. 
@@ -434,7 +435,7 @@ Here we show a few examples, which might be useful at your web server.
 * `reportDataAndGetScenariosByPageType(pageType, itemID, categoryID)` - to report pageview and retrieve all recommendations related to the pageType
 
 
-## getRecommendation [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getRecommendation&_url={referrer_url}&_queryOnly=false&_debug=false&algorithmID={algorithm_id}&itemsPerPage={items_per_page}&page={page}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
+## getRecommendation [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getRecommendation&_url={referring_page}&_queryOnly=false&_debug=false&algorithmID={algorithm_id}&itemsPerPage={items_per_page}&page={page}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
 Return items and aggregations for given recommendation algorithm. Allows to specify data table, in which generate recommendation, included fields to return only fields you need to minimize data traffic,... 
 
 Algorithm might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
@@ -449,7 +450,7 @@ In `idsOnly` mode you get requested ids in `data.itemFieldValues.itemID` or `dat
           Other IDs may be added during configuration.
     + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
           which identifies browser or device.
-    + referrer_url (required, string, `www.somewebsite.com`) ... url of the page sending request
+    + referring_page (required, string, `www.somewebsite.com`) ... url of the page sending request
 
     + algorithm_id (required, string, `psGeneral`) ... Algorithm ID (as you find in url in Persoo administration).
     + items_per_page (optional, number, `3`) ... number of products in response (on given page) or simply max count of returned products
