@@ -3,101 +3,26 @@ HOST: https://rtp.persoo.ai
 
 
 # Persoo RTP API
-Persoo has two APIs - one for [administration](https://docs.persoo.apiary.io/) and another for reporting web visitors behavior and querying for the recommended web personalizations. Here we describe the second one.
 
-Real-time processing unit (RTP) is the worker of the Persoo cloud that processes requests reported from browsers or web servers and provides data for personalizations in response.
+Real-time processing unit (RTP) is the worker of the 
+Persoo cloud that processes requests reported from 
+browsers or web servers and provides data for personalizations in the response.
 
-### Terminology
 
-* **Visitor** - real website visitor. He uses several browsers or devices identified by VID (Visitor ID, i.e. cookie), has email address, user ID, etc.
+## Uses
+
+This API is used for reporting events or for requesting products/items from recommendation or search algorithms.
+
+
+## Terminology
+
+* **Visitor** - real website visitor. He uses several 
+browsers or devices identified by VID (Visitor ID, i.e. cookie), 
+email hash, user ID, etc.
 * **Client** - owner of the website.
 * **User** - someone configuring Persoo for a client.
 
-## How Persoo works
-Create your account in Persoo, provide products and categories exports (e.g., by a XML feed), add the Persoo JavaScript loader to your webpages, and configure the rest in the Persoo administration.
-
-### Ways of integration
-
-There are two ways to integrate Persoo in your web:
-* **JavaScript** - your web server need not know about Persoo. Everything is realized through [JavaScript client](https://confluence.persoo.cz/display/DOC/Javascript+Data+Collection) which reports data, receives personalizations as HTML fragments and displays them in the appropriate locations. Personalizations are added to a page as dynamic HTML fragments (similarly to AJAX, but it works also cross domain).
-
-* **Web server** - your web server is responsible for tracking the visitor/browser identification. It reports visitors behavior and receives personalizations in the JSON format. It is its responsibility to render the received data to HTML or even to decide how to use them.
-
-You can combine both ways - your web server renders the personalizations by itself to have the web pages loaded faster in browsers; but the data about offer impressions, clicks, and dynamic AJAX events are reported through the JavaScript client.
-
-### Report data and query for personalizations
-
-In Persoo, both is processed in real time in one request:
-
-1. **Report data** --- webserver or javascript in browser reports data about visitor interactions.
-   I.e., visitor with cookie "ABC" did event "pageview", because he viewed "detail" 
-   page of product "prod123" from category "catXYZ". Server process reported data in real time before sending response.
-2. **Query for personalizations/recommendations** --- as a response, RTP returns personalizactionns
-   related to product "detail" page, i.e. recommendation, personalized banners,...
-
-In website personalizations, we typically want to report visitor interactions
-(i.e. pageview, add to cart, click button) and react immediatelly (display/update
-a recommendation, offer, banner,...). Persoo is designed not to require too many queries,
-because work with many http requests makes it slowlyer. You can **report all data at once in one query** and even get what you need. In case you need to report data only, Persoo returns
-almost empty response, just as a confirmation.
-
-### Workflows for request processing
-
-RTP requests are processed by **workflows**. Requests have 10s **timeout** after which the server responds with error 500. Main workflow is designed to processed **events**
-from a website, i.e. "pageview", "addToCart", "statistics" events. Workflows can call other
-workflows as sub-workflows, or even use conditions or change arguments for workflow calls.
-
-In RTP request, you can specify a workflow to be called, i.e. when you need to get recommendations
-from a particular recommendation scenario.
-
-TODO predefined workflows, events, parameters they need (dataLayers specification).
-
- * event `pageview({pageType: <string>, itemID: <string>, categoryID: <string>, hierarchy: <string>, transaction: <JSON>, basketTotal: <number>, basketItems: <JSON>})`
-   `rawData: <boolean>` (optional) return raw data as list of recommended products, too.
-   `idsOnly: <boolean>` (optional) return only product ids, not product items (metadata).
- * event `addToBasket({itemID: <string>})`
- * event `removeItem({itemID: <string>})` ... remove item form viewed and thus preferred items.
- 
-* event `getScenario({scenarioID: <string>})` with optional arguments:
- * `itemID: <string>` (optional) item for item based recommendations (currently viewed item)
- * `categoryID: <string>` (optional) category for category based recommendations (currently viewed category)
- * `count: <integer>` (optional) maximum number of items to return
- * `idsOnly: <boolean>` (optional) return only product ids, not product items (metadata).
- 
-* event `getAlgorithm({algorithmID: <string>})` with optional arguments:
- * `itemID: <string>` (optional) item for item based recommendations (currently viewed item)
- * `categoryID: <string>` (optional) category for category based recommendations (currently viewed category)
- * `count: <integer>` (optional) maximum number of items to return (Note: some algorithms temporarily returns 30 items)
-
-### Visitor identifications
-
-Visitor in Persoo corresponds to a real person. Visitor may use several **browsers or devices.** 
-In Persoo, we denote them by **VID** (VisitorID). Typically they correspond to a cookie.
-
-Visitor also have **named identifications** like email, phone number, user ID, etc. These identification
-are in Persoo represented by pairs **[idType, idValue]**, i.e. [email, hello@persoo.cz], 
-[phone, "+420608179251"], [userId, 12345].
-
-You only need to report identification to Persoo and it does the rest for you -- calculate equivalence
-classes with certain probability, merging visitor profiles, or even spliting visitor profiles when
-it is necessary to correct an equivalence class.
-
-## Technical
-
-### Allowed HTTPs requests
-
-- `GET` - Retrieves a resource or list of resources
-
-### Typical Server Responses
-
-- 200 `OK` - The request was successful (some API calls may return 201 or 204 instead).
-- 204 `No content` - The request was successful, but returns no content.
-- 400 `Bad Request` - The request could not be understood or was missing required parameters.
-- 401 `Unauthorized` - Authentication token is invalid or expired (try login again)
-- 403 `Forbidden` - Access denied. 
-- 404 `Not Found` - Resource was not found.
-
-### JSON/JSONP
+## JSON/JSONP
 All methods supports JSON and JSONP. Format is selected by suffix (file type)
 in request's pathname:
 * **.js** for JSONP (response is javascript)
@@ -108,66 +33,50 @@ The caller is responsible for implementing this function.
 
 When working in javascript, use [javascript client](https://confluence.persoo.cz/display/DOC/Javascript+Data+Collection) for sending and receiving request instead of raw API.
 
-Why we support JSONP? It's necessary for javascript client in web browsers,
-which follow CORS restrictions (disallow cross domain requests).
+Why do we support JSONP? It's necessary for the javascript client in web browsers,
+since they enforce CORS restrictions (disallow cross domain requests).
 
-
-# Group Report & Query
-Reporting visitor interactions or querying for personalizations.
-
-HTTP Header params:
-* `referer` (required) ... URL of the web page, which requested personalizations
-* `cookie` (optional) ... used only if third-party cookies are ON.
-
-**Session / non-session modes.** Visitors visits websites in sessions. They typically do a stream of events, ie. view several pages or purchase a product. 
-In session mode, Persoo keeps profile and related data in cache for higher efficiency. Moreover there are other workflows related to a session - call 
-custom workflow on session expiration, calculate data only for current session, etc.
-
-NOTE: at the moment, requests with identification  "_vid=<visitorID>" uses session mode, 
-other requests with identification "_idType=<idType>&_idValue=<ID>" uses non-session mode.
-
-**Custom parameters.** You can provide arbitrary parameters/fields, but predefined workflows can work only with some of them.
-Each parameter value is JSON. Moreover you can remove the string quotes 
-if the value is not a reserved word (null, true, false) and if it does not start with a digit, '+', '-', '{' or '['.
-Example: `prop1=abc&prop2="xyz"&prop3=123&prop4=1.0&prop5=true` is correct, but following must use quotes, otherwise not interpreted as string
-`prop1="12abc"&prop2="123"&prop3="true"&prop4="null"`.
-
-TODO differences when third-party cookies are on
-
-## Call workflow for current visitor [/{account_id}/{environment_id}/workflow.json?_vid={browser_id}&_a={agent}&_e={event}&_w={workflow}&_url={referring_page}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&sortByField={sortby_field}&sortOrder={sort_order}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
+## Request products/items for current visitor [/{account_id}/{environment_id}/workflow.json?_t={timestamp}&_vid={browser_id}&_a={agent}&_e={event}&_url={requesting_page}&_ref={referring_page}&_debug={debug}&idsOnly={ids_only}&sortByField={sortby_field}&sortOrder={sort_order}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&algorithmID={algorithm_id}&offerID={offer_id}&locationID={location_id}&index={index}&itemsPerPage={items_per_page}&page={page}&basketItems={basket_items}&query={query}&idType={id_type}&idValue={id_value}&boolQuery={bool_query}&{customfields}]
 Usually, javascript client keeps visitor identification in a cookie and uses JSONP version
 to report visitor interactions and to receive personalizations as HTML fragments.
 
 + Parameters
+    + timestamp (optional, number, `1678369882717`) ... Timestamp when the request was sent
     + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
     + environment_id (required, string, `p`) ... ID of an environment. 
-          Production has always ID 'p'. Typically there is also 'test'. 
-          Other IDs may be added during configuration.
+          Accepts 'p' for production and 'test' for staing environment.
     + browser_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
-          which identifies browser or device.
+          which identifies browser or device. 
+          Created by JS Persoo snippet and stored in the `persooVid` cookie. 
+          Alternatively can be generated server-side.
     + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
-    
-    + workflow (optional, string, `pageview`) ... Workflow ID. Workflow to process the request.
     + referring_page (required, string, `https://mywebsite.com`) ... URL of the requesting page.
-    + queryOnly (optional, boolean, `false`) ... Whether the request is meant to update the corresponding visitor profile.
-        or only queries on the profile. Value 'true' doesn't quarantee all workflows become read-only - it's the client's 
-        responsibility to use 'true' only with truly read-only workflows. 
-        NOTE: currently, it must be false in the session mode and true in the non-session mode.
-    + debug (optional, boolean, `false`) ... Whether to include debug information in the response.    
-    + event (optional, string, `pageview`) ... Event name/ID. Typical request to RTP corresponds to visitor event/interaction and carries data about the event.
-    
-
-    + raw_data (optional, boolean, `true`) ... Whether to return also raw recommendation data as list of recommended products with its metadata. Not only HTML fragmetns.
+    + debug (optional, boolean, `false`) ... Whether to include debug information in the response. Default is false.   
+    + event (required, string, `getRecommendation`) ... Event name. Usually 'pageview', 'statistics', 'addToBasket' and other.
+    + requesting_page (required, string, `https://mywebsite.com`) ... URL or ID of the requesting page.
     + sortby_field (optional, string, `price`) ... Any numeric attribute of the returned item. This sorting overrides default ordering calculated by the algorithm.
     + sort_order (optional, string, `asc`) ... Specifies ascending or descending sort order. Accepts 'asc' and 'desc'.
-    + ids_only (optional, boolean, `true`) ... Extends "rawData" atribute: Whether itemIDs only or all product metadata. Default is false.
-    
-    + page_type (required, string, `homepage`) ... pageTypes (as you have in dataLayer and also defined in settings in Persoo administration).
-    + item_id (optional, string, `PROD001`) ... Context: event is related to product with given itemID.
-    + category_id (optional, string, `Smart phones`) ... Context: event is related to category with given categoryID.
+    + ids_only (optional, boolean, `true`) ... Whether itemIDs only or all allowed product metadata. Default is false.
+    + query (optional, string, `men shoes`) ... Context: search query, when requesting search algorithm.
+    + page_type (required, string, `homepage`) ... Context: pageType of the requesting page, usually 'homepage', 'category', 'detail', 'basket' etc.
+    + item_id (optional, string, `PROD001`) ... Context: itemID of the product the event is relating to.
+    + category_id (optional, string, `Smart phones`) ... Context: categoryID of the category the event is relating to.
     + hierarchy (optional, string, `Electonics:Phones:Smart phones`) ... Context: category hierarchy as given in page breadcrumb.
-    + customfields (optional, string, `customField=customValue`) ... Your custom fields. See [other fields](#workflow_fields)
-    
+    + customfields (optional, string, `customField=customValue`) ... Other potential custom fields.
+    + algorithm_id (required, string `persooProductsFulltextSearch`) ... ID of the requested algorithm. Provided by Persoo.
+    + offer_id (optional, string, `f5b8911747b04e8dadb97be5ac8af431`) ... ID of the requested offer. Needed 
+        for proper analytics function. Provided by Persoo.
+    + location_id (optional, string, `f5b8911747b04e8dadb97be5ac8af431`) ... ID of the requested location. 
+        Needed for proper analytics function. Provided by Persoo.
+    + index (optional, string, `products`) ... ID of the requested index. Needed for proper analytics function. Provided by Persoo.
+    + items_per_page (optional, number, `12` ) ... Number of items returned when using pagination. Default: 30
+    + page (optional, number, `3`) ... Pagination number of page requested. Starts at zero. Default: 0
+    + id_type (optional, string, `storeID`) ... Visitor ID for custom identification tagging. Paired with idValue.
+    + id_value (optional, string, `C2223`) ... Value of the Visitor ID specified in idType. Paired with idType.
+    + basket_items (optional, string, `{"214-10698":{"quantity":"2","price":1129.57},"214-21162":{"quantity":"1","price":38.26}}`) ... Context: encoded object with products in basket in the moment of event sending.
+    + bool_query (optional, string, `%7B%22must%22%3A%5B%7B%22type%22%3A%22customRule%22%2C%22fields%22%3A%5B%22brand%22%2C%22%24in%22%2C%22value%22%2C%22%5C%22Adidas%5C%22%22%5D%7D%5D%7D`) ... Filters for the request. Accepts URI-valid encoded object such as: {"must":[{"type":"customRule","fields":["brand","$in","value","\"Styx\""]}]}
+        For numeric values use $gte and $lte for "greater than" and "lower than":
+        {"must":[{"type":"customRule","fields":["price","$gte","value","9"]},{"type":"customRule","fields":["price","$lte","value","15"]}]}
 
 
 ### workflow.json [GET]
@@ -183,479 +92,285 @@ to report visitor interactions and to receive personalizations as HTML fragments
     + Body
     
             {
-                data: {
-                    "scenarios": {
-                        "hpRecommend": {
-                            "ids": [
-                                "11564",
-                                "12151",
-                                "11570",
-                                "12198",
-                                "12854"                    
-                            ]
-                        },
-                        "lastViewed": {
-                            "ids": [
-                                "11582",
-                                "11569"
-                            ]
-                        }
-                    },
-                    "preferredSection": "phones"
-                    "recommendedProductsHP": ["DF523", "AC235", "BZ628"]
-                    "exported": "variables",
-                    "key": "value",
-                    "key2": [1,2,3]
-                },
-                functionCalls: [
-                    {
-                        "function": "myCustomFunction",
-                        "args": ["arg1", "arg2", "arg3"]
-                    }
-                ],
-                exceptions: [
-                   {
-                      "class": "cz.persoo.exception.PersooRuntimeException",
-                      "message": "org.mozilla.javascript.EcmaError: TypeError: Cannot set property \"null\" of null to \"null\" (<init>#1)",
-                      "stackTrace": [
-                        {
-                          "ref": "main",
-                          "step": 0
-                        },
-                        {
-                          "ref": "checkboxes"
-                        }
-                      ]
-                    }
-                ],
-                "setVisitorID": "XADWW4D156SWW3264646SSSDF"
-            }
-
-## Call workflow for visitor by ID [/{account_id}/{environment_id}/workflow.json?idType={identification_type}&idValue={identification_value}&_a={agent}&_authKey=%22{auth_key}%22&_e={event}&_w={workflow}&_queryOnly={queryOnly}&_debug={debug}&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}&{customfields}]
-You can specify visitor by some of his IDs and run a workflow for this visitor.
-
-Note: 'Bad Request' may mean, that you are not authorized. That you are using wrong authentication key. For well authenticated request you will see more informative error messages.
-
-+ Parameters
-    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
-    + environment_id (required, string, `p`) ... ID of an environment. 
-      Production has always ID 'p'. Typically there is also 'test'. 
-      Other IDs may be added during configuration.
-    + identification_type (required, string, `email`) ... Identification type, i.e. "browserID", "email", "userId",...
-    + identification_value (required, string, `my@email.com`) ... Identification value for given type, i.e. email address, userId,...
-    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
-    + auth_key (required, string, `63229b614f8c32afc5e2043d87f9d3c7`) ... Authentization key, which is set in Persoo Administration.
-    
-    
-    + workflow (optional, string, `pageview`) ... Workflow ID. Workflow to process the request.
-    + queryOnly (optional, boolean, `false`) ... Whether the request is meant to update the corresponding visitor profile.
-        or only queries on the profile. Value 'true' doesn't quarantee all workflows become read-only - it's the client's 
-        responsibility to use 'true' only with truly read-only workflows. 
-        NOTE: currently, it must be false in the session mode and true in the non-session mode.
-    + debug (optional, boolean, `false`) ... Whether to include debug information in the response.
-    + event (optional, string, `pageview`) ... Event name/ID. Typical request to RTP corresponds to visitor event/interaction and carries data about the event.
-
-    + raw_data (optional, boolean, `true`) ... Whether to return also raw recommendation data as list of recommended products with its metadata. Not only HTML fragmetns.
-    + ids_only (optional, boolean, `true`) ... Extends "rawData" atribute: Whether itemIDs only or all product metadata. Default is false.
-    
-    + page_type (required, string, `homepage`) ... pageTypes (as you have in dataLayer and also defined in settings in Persoo administration).
-    + item_id (optional, string, `PROD001`) ... Context: event is related to product with given itemID.
-    + category_id (optional, string, `Smart phones`) ... Context: event is related to category with given categoryID.
-    + hierarchy (optional, string, `Electonics:Phones:Smart phones`) ... Context: category hierarchy as given in page breadcrumb.
-    + customfields (optional, string, `customField=customValue`) ... Your custom fields. See [other fields](#workflow_fields)
-    
-
-### workflow.json [GET]
-
-+ Request
-
-    + Headers
-        
-            Referer: <http://mywebsite.com>
-
-+ Response 200 (application/json)
-    + Body
-    
-            {
-                data: {
-                    Arrind "scenarios": {
-                        "hpRecommend": {
-                            "ids": [
-                                "11564",
-                                "12151",
-                                "11570",
-                                "12198",
-                                "12854"                    
-                            ]
-                        },
-                        "lastViewed": {
-                            "ids": [
-                                "11582",
-                                "11569"
-                            ]
-                        }
-                    },
-                    "preferredSection": "phones"
-                    "recommendedProductsHP": ["DF523", "AC235", "BZ628"]
-                    "exported": "variables",
-                    "key": "value",
-                    "key2": [1,2,3]
-                },
-                functionCalls: [
-                    {
-                        "function": "myCustomFunction",
-                        "args": ["arg1", "arg2", "arg3"]
-                    }
-                ],
-                exceptions: [
-                   {
-                      "class": "cz.persoo.exception.PersooRuntimeException",
-                      "message": "org.mozilla.javascript.EcmaError: TypeError: Cannot set property \"null\" of null to \"null\" (<init>#1)",
-                      "stackTrace": [
-                        {
-                          "ref": "main",
-                          "step": 0
-                        },
-                        {
-                          "ref": "checkboxes"
-                        }
-                      ]
-                    }
-                ],
-                "setVisitorID": "XADWW4D156SWW3264646SSSDF"
-            }
-
-
-## Alias identification [/{account_id}/{environment_id}/alias.json?idType={id_type}&idValue={id_value}&aliases={aliases}&_a={agent}]
-Add aliases to an identification. For example if you have login and email, or email and subscriberId, 
-you can report the aliases for which **you must be 100% sure they correspond to the same person.**
-
-Persoo will merge corresponding visitor profiles (if they already exists) and later on, 
-new anonymous browsers can be identified by any of these identifications.
-
-+ Parameters
-    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
-    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
-    + id_type (required, string, `email`) ... main identification type. 
-    + id_value (required, string, `my@email.com`) ... main identification value.
-    + aliases (required, string, `userID:123,phone:777777777`) ... comma separated identification pairs, each pair has format <idType>:<idValue>. 
-    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
-
-
-### alias.json [GET]
-+ Response 200 (application/json)
-
-    + Body
-
-            { "status": "OK" }
-
-# Group For debugging
-To be able to debug or test workflows, there a few helper functions.
-
-## Get visitor profile for current visitor [/{account_id}/{environment_id}/getVisitorSpace.json?_vid={visitor_id}&_a={agent}]
-Returns visitor profile as JSON.
-
-+ Parameters
-    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
-    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
-    + visitor_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
-          which identifies browser or device.
-    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
-
-
-### getVisitorSpace.json [GET]
-+ Response 200 (application/json)
-
-    + Body
-
-            { "id": 2, "data": "about visitor" }
-            
-## Get visitor profile for visitor by ID [/{account_id}/{environment_id}/getVisitorSpace.json?idType={identification_type}&idValue={identification_value}&_a={agent}&_authKey=%22{auth_key}%22]
-Returns visitor profile as JSON.
-
-+ Parameters
-    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
-    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
-    + identification_type (required, string, `email`) ... Identification type, i.e. "BrowserID", "email", "userId",...
-    + identification_value (required, string, `my@email.com`) ... Identification value for given type, i.e. email address, userId,...
-    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
-    + auth_key (required, string, `63229b614f8c32afc5e2043d87f9d3c7`) ... Authentization key, which is set in Persoo Administration.
-
-
-
-### getVisitorSpace.json [GET]
-+ Response 200 (application/json)
-
-    + Body
-
-            { "id": 2, "data": "about visitor" }
-            
-## End session for current visitor [/{account_id}/{environment_id}/endSession?_vid={visitor_id}&_a={agent}]
-Returns visitor profile as JSON.
-
-+ Parameters
-    + account_id (required, string, `f952tmgo0k7vpil7kcef10o4`) ... ID of an account.
-    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
-    + visitor_id (required, string, `AAABQAg1a7sMJnpF6WlwIFuC`) ... Visitor ID, 
-          which identifies browser or device.
-    + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
-
-
-### endSession.json [GET]
-+ Response 200 (application/json)
-
-    + Body
-
-            { "status": "OK" }            
-
-## Clear third party cookies for current visitor [/clearBrowserID.json]
-Reset third party cookies, that were used as browser identification. Do nothing if third party cookies are switched off for the account.
-
-### clearBrowserID.json [GET]
-+ Response 200 (application/json)
-
-    + Body
-
-            { "status": "OK" }
-            
-## Health Check [/healthCheck.json]
-Health check.
-
-### healthCheck.json [GET]
-+ Response 200 (application/json)
-
-    + Body
-
-            { "healthCheck": "OK" }
-            
-# Group Examples
-Here we show a few examples, which might be useful at your web server.
-* `getScenario(scenarioID)` - (to be deprecated soon) to get recommendations from given scenario
-* `getRecommendation(algorithmID)` - to get recommendations from given recommendation algorithm, supports new features like various tables (products, categories,...), aggregations,... But mixer algorithm si not implemented yet, so still you need to use Scenarios.
-* `reportDataAndGetScenariosByPageType(pageType, itemID, categoryID)` - to report pageview and retrieve all recommendations related to the pageType
-
-
-## getRecommendation [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getRecommendation&_url={referring_page}&_queryOnly=false&_debug=false&algorithmID={algorithm_id}&itemsPerPage={items_per_page}&page={page}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
-Return items and aggregations for given recommendation algorithm. Allows to specify data table, in which generate recommendation, included fields to return only fields you need to minimize data traffic,... 
-
-Algorithm might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
-For example at homepage, you do not need context, at product detail you should provide itemID of viewed product, its categoryID and its hierarchy.
-
-In `idsOnly` mode you get requested ids in `data.itemFieldValues.itemID` or `data.itemFieldValues.itemGroupID`. It depends which ID you need. 
-
-+ Parameters
-    + account_id_1 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
-    + environment_id (required, string, `p`) ... ID of an environment. 
-          Production has always ID 'p'. Typically there is also 'test'. 
-          Other IDs may be added during configuration.
-    + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
-          which identifies browser or device.
-    + referring_page (required, string, `www.somewebsite.com`) ... url of the page sending request
-
-    + algorithm_id (required, string, `psGeneral`) ... Algorithm ID (as you find in url in Persoo administration).
-    + items_per_page (optional, number, `3`) ... number of products in response (on given page) or simply max count of returned products
-    + page (optional, number, `0`) ... page number in case you want to show all pages with results
-    + ids_only (optional, boolean, `true`) ... return only list of IDs or return also all product metadata. Default is false.
-    + item_id (optional, string, `MYITEMID`) ... itemID if scenarion context requires it
-    + category_id (optional, string, `MYCATEGORYID`) ... categoryID if scenarion context requires it
-    
-### getRecommendation [GET]
-
-+ Request
-
-    + Headers
-
-            Cookie: persooVID={visitor_id};
-            Referer: http://my.website.com
-
-+ Response 200 (application/json)
-    + Body
-    
-            {
-                "data": {
+            "data": {
                     "aggregations": {
                         "brand": {
                             "terms": [
                                 {
-                                    "count": 83,
-                                    "value": "VANS"
+                                    "count": 42,
+                                    "value": "Converse"
+                                }
+                            ]
+                        },
+                        "category_level0": {
+                            "terms": [
+                                {
+                                    "count": 35,
+                                    "value": "Shoes"
                                 },
                                 {
-                                    "count": 4,
-                                    "value": "Mitchell & Ness"
+                                    "count": 5,
+                                    "value": "Clothing"
+                                },
+                                {
+                                    "count": 2,
+                                    "value": "Accessories"
+                                }
+                            ]
+                        },
+                        "category_level1": {
+                            "terms": [
+                                {
+                                    "count": 17,
+                                    "value": "Shoes > High Tops"
+                                },
+                                {
+                                    "count": 15,
+                                    "value": "Shoes > Low"
+                                },
+                                {
+                                    "count": 3,
+                                    "value": "Clothing > Caps"
+                                },
+                                {
+                                    "count": 3,
+                                    "value": "Shoes > Ballerinas"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "Accessories > Backpacks"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "Accessories > Sacks"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "Clothing > Hats"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "Clothing > Vests and Tops"
+                                }
+                            ]
+                        },
+                        "colors": {
+                            "terms": [
+                                {
+                                    "count": 9,
+                                    "value": "black"
+                                },
+                                {
+                                    "count": 8,
+                                    "value": "blue"
+                                },
+                                {
+                                    "count": 6,
+                                    "value": "pink"
+                                },
+                                {
+                                    "count": 5,
+                                    "value": "white"
+                                },
+                                {
+                                    "count": 3,
+                                    "value": "beige"
+                                },
+                                {
+                                    "count": 3,
+                                    "value": "brown"
+                                },
+                                {
+                                    "count": 2,
+                                    "value": "gray"
+                                },
+                                {
+                                    "count": 2,
+                                    "value": "green"
+                                },
+                                {
+                                    "count": 2,
+                                    "value": "red"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "burgundy"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "purple"
+                                }
+                            ]
+                        },
+                        "gender": {
+                            "terms": [
+                                {
+                                    "count": 42,
+                                    "value": "women"
+                                },
+                                {
+                                    "count": 30,
+                                    "value": "men"
                                 }
                             ]
                         },
                         "price": {
                             "numeric": {
-                                "avg": 1363.3333333333333,
-                                "max": 5990.0,
-                                "min": 250.0
+                                "avg": 53.73428571428572,
+                                "max": 86.04,
+                                "min": 15.13
                             }
+                        },
+                        "productType": {
+                            "terms": [
+                                {
+                                    "count": 17,
+                                    "value": "Shoes > High Tops"
+                                },
+                                {
+                                    "count": 15,
+                                    "value": "Shoes > Low"
+                                },
+                                {
+                                    "count": 3,
+                                    "value": "Clothing > Caps"
+                                },
+                                {
+                                    "count": 3,
+                                    "value": "Shoes > Ballerinas"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "Accessories > Backpacks"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "Accessories > Sacks"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "Clothing > Hats"
+                                },
+                                {
+                                    "count": 1,
+                                    "value": "Clothing > Vests and Tops"
+                                }
+                            ]
                         }
                     },
+                    "externalRequestID": null,
                     "itemFieldValues": {
-                        "brand": ["VANS"],
-                        "itemID": ["VNS090"],
-                        "itemGroupID": ["21290"]
+                        "brand": [
+                            "Converse"
+                        ],
+                        "categoryID": [
+                            "Accessories > Sacks",
+                            "Clothing > Vests and Tops",
+                            "Accessories > Backpacks",
+                            "Clothing > Caps",
+                            "Clothing > Hats",
+                            "Shoes > High Tops",
+                            "Shoes > Low"
+                        ],
+                        "colors": [],
+                        "id": [
+                            "13634C-600",
+                            "14680C-102",
+                            "410851-452",
+                            "512426",
+                            "526584",
+                            "527086",
+                            "527703",
+                            "C144826F",
+                            "C149510",
+                            "C149511",
+                            "C149858",
+                            "C150143",
+                            "C150148",
+                            "C150152",
+                            "C151030",
+                            "C151122",
+                            "C151438",
+                            "C153513",
+                            "C153674",
+                            "C153795",
+                            "C153820",
+                            "C544850",
+                            "C547156",
+                            "C551561"
+                        ],
+                        "itemGroupID": [
+                            "13634C-600",
+                            "14680C-102",
+                            "410851-452",
+                            "512426",
+                            "526584",
+                            "527086",
+                            "527703",
+                            "C144826F",
+                            "C149510",
+                            "C149511",
+                            "C149858",
+                            "C150143",
+                            "C150148",
+                            "C150152",
+                            "C151030",
+                            "C151122",
+                            "C151438",
+                            "C153513",
+                            "C153674",
+                            "C153795",
+                            "C153820",
+                            "C544850",
+                            "C547156",
+                            "C551561"
+                        ],
+                        "itemID": [
+                            "888753319637_13634C-600",
+                            "888753368147_14680C-102",
+                            "847519030582_410851-452",
+                            "040077512426_512426",
+                            "040077526584_526584",
+                            "040077527086_527086",
+                            "040077527703_527703",
+                            "886955046733_C144826F",
+                            "886956228053_C149510",
+                            "886956228251_C149511",
+                            "886956117647_C149858",
+                            "886956276559_C150143",
+                            "886956277457_C150148",
+                            "886956278317_C150152",
+                            "888753244007_C151030",
+                            "888753222258_C151122",
+                            "888753138917_C151438",
+                            "888753657616_C153513",
+                            "888753820515_C153674",
+                            "888753824919_C153795",
+                            "888753827514_C153820",
+                            "886955062641_C544850",
+                            "886955748811_C547156",
+                            "888753288919_C551561"
+                        ],
+                        "pageType": [],
+                        "productType": [
+                            "Accessories > Sacks",
+                            "Clothing > Vests and Tops",
+                            "Accessories > Backpacks",
+                            "Clothing > Caps",
+                            "Clothing > Hats",
+                            "Shoes > High Tops",
+                            "Shoes > Low"
+                        ],
+                        "section": [],
+                        "subSection": []
                     },
-                    "items": [
-                        {
-                            "_algorithmSource": "d21d8acbea3a4d539e2ef68adf7189e6",
-                            "available": 2,
-                            "brand": "VANS",
-                            "categoryID": "batohy",
-                            "description": "Batoh VANS Realm Surf Geo",
-                            "hierarchy": [
-                                "Dopl\u0148ky:Batohy"
-                            ],
-                            "imageLink": "https://persoo.cz/5655f404d6437100.jpg",
-                            "itemGroupID": "21290",
-                            "itemID": "VNS090",
-                            "link": "https://persoo.cz/21290-batoh-vans-realm-surf-geo/",
-                            "price": 890.0,
-                            "priceOriginal": 890.0,
-                            "productType": "Batohy",
-                            "title": "Batoh VANS Realm Surf Geo "
-                        }
-                    ],
-                    "itemsCount": 99,
-                    "itemsPerPage": 1,
+                    "items": [],
+                    "itemsCount": 42,
+                    "itemsPerPage": 24,
                     "page": 0,
-                    "pagesCount": 99,
+                    "pagesCount": 2,
                     "table": "products"
                 },
-                "exceptions": [
-                ],
-                "functionCalls": [
-                ]
+                "exceptions": [],
+                "functionCalls": []
             }
-            
-
-
-## getScenario [/{account_id_1}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=getScenario&_queryOnly=false&_debug=false&scenarioID={scenario_id}&idsOnly={ids_only}&count={count}&itemID={item_id}&categoryID={category_id}]
-Return itemIDs for given scenarioID. You can find available scenarioIDs for you account in persoo administration (scenarioID are in URL) or you can create new one.
-
-Scenario might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
-For example at homepage, you do not need context, at product detail you should provide itemID of viewed product, its categoryID and its hierarchy.
-
-+ Parameters
-    + account_id_1 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
-    + environment_id (required, string, `p`) ... ID of an environment. 
-          Production has always ID 'p'. Typically there is also 'test'. 
-          Other IDs may be added during configuration.
-    + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
-          which identifies browser or device.
-
-    + scenario_id (required, string, `hpRecommend`) ... Scenario ID (as you find in url in Persoo administration).
-    + ids_only (optional, boolean, `true`) ... return only list of IDs or return also all product metadata. Default is false.
-    + count (optional, number, `5`) ... number of recommended products in response.
-    + item_id (optional, string, `MYITEMID`) ... itemID if scenarion context requires it
-    + category_id (optional, string, `MYCATEGORYID`) ... cagoryID if scenarion context requires it
-
-### getScenario [GET]
-
-+ Request
-
-    + Headers
-
-            Cookie: persooVID={visitor_id};
-            Referer: http://my.website.com
-
-+ Response 200 (application/json)
-    + Body
-    
-            {
-              "data": {
-                "ids": [
-                  "11564",
-                  "12151",
-                  "11570",
-                  "12198",
-                  "12854"
-                ]
-              },
-              "exceptions": [],
-              "functionCalls": []
-            }
-
-## getScenariosByPageType [/{account_id2}/{environment_id}/workflow.json?_vid={visitor_id}&_a=my-server-agent&_e=pageview&_queryOnly=false&_debug=false&rawData={raw_data}&idsOnly={ids_only}&pageType={page_type}&itemID={item_id}&categoryID={category_id}&hiearchy={hierarchy}]
-Report data about pageview and get all scenarios for the page in one request.
-
-Return itemIDs for given scenarioID. You can find available scenarioIDs for you account in persoo administration (scenarioID are in URL) or you can create new one.
-
-Scenario might need a context to provide recommendations related to an itemID/categoryID/hierarchy. 
-For example at homepage, you do not need context, at product detail you should provide itemID of viewed product, its categoryID and its hierarchy.
-
-+ Parameters
-    + account_id2 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
-    + environment_id (required, string, `p`) ... ID of an environment. 
-          Production has always ID 'p'. Typically there is also 'test'. 
-          Other IDs may be added during configuration.
-    + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
-          which identifies browser or device.
-
-    + page_type (required, string, `homepage`) ... pageTypes (as you have in dataLayer and also defined in settings in Persoo administration).
-    + item_id (optional, string, `PROD001`) ... Context: event is related to product with given itemID.
-    + category_id (optional, string, `Smart phones`) ... Context: event is related to category with given categoryID.
-    + hierarchy (optional, string, `Electonics:Phones:Smart phones`) ... Context: category hierarchy as given in page breadcrumb.
-    
-    + raw_data (optional, boolean, `true`) ... Whether to return also raw recommendation data as list of recommended products with its metadata. Not only HTML fragmetns.
-    + ids_only (optional, boolean, `true`) ... Extends "rawData" atribute: Whether itemIDs only or all product metadata. Default is false.
-
-### getScenariosByPageType [GET]
-
-+ Request
-
-    + Headers
-
-            Cookie: persooVID={visitor_id};
-            Referer: http://my.website.com
-
-+ Response 200 (application/json)
-    + Body
-    
-            {
-              "data": {
-                "scenarios": {
-                  "hpRecommend": {
-                    "ids": [
-                      "11564",
-                      "12151",
-                      "11570",
-                      "12198",
-                      "12854"                    
-                    ]
-                  },
-                  "lastViewed": {
-                    "ids": [
-                      "11582",
-                      "11569"
-                    ]
-                  }
-                }
-              },
-              "exceptions": [],
-              "functionCalls": []
-            }
-
-## getVisitorProfile [/{account_id_1}/{environment_id}/getVisitorSpace.json?_vid={visitor_id}&_a=my-server-3]
-Returns visitor profile as JSON. 
-Visitor profile contains
-* db part - data about use stored in DB
-* tmp part - data computed from db part, session statistics and session related data (i.e. landing page, campaign), fetched products, categories data, scenarios,...
-See [what data can I find in visitor profile](https://confluence.persoo.cz/pages/viewpage.action?pageId=42270728) (in czech)
-
-+ Parameters
-    + account_id_1 (required, string, `93a9ilfo7s9bql8lppqvjqbr`) ... ID of an account.
-    + environment_id (required, string, `p`) ... `id` of an environment. Production has always ID 'p'. Typically there is also 'test'. Other IDs may be added in configuration.
-    + visitor_id (required, string, `AAABUmjR66CeniESIlafWzb3`) ... Visitor ID, 
-          which identifies browser or device.
-
-
-### getVisitorSpace.json [GET]
-+ Response 200 (application/json)
-
-    + Body
-
-            { "id": 2, "data": "about visitor" }
