@@ -63,10 +63,15 @@ to report visitor interactions and to receive personalizations as HTML fragments
     + category_id (optional, string, `Smart phones`) ... Context: categoryID of the category the event is relating to.
     + hierarchy (optional, string, `Electonics:Phones:Smart phones`) ... Context: category hierarchy as given in page breadcrumb.
     + customfields (optional, string, `customField=customValue`) ... Other potential custom fields.
-    + algorithm_id (required, string `persooProductsFulltextSearch`) ... ID of the requested algorithm. Provided by Persoo.
-    + offer_id (optional, string, `f5b8911747b04e8dadb97be5ac8af431`) ... ID of the requested offer. Needed 
-        for proper analytics function. Provided by Persoo.
+    + algorithm_id (required, string `persooProductsFulltextSearch`) ... ID of the requested algorithm. 
+        Algorithm represents product selection logic for the given offer. 
+        Provided by Persoo.
+    + offer_id (optional, string, `f5b8911747b04e8dadb97be5ac8af431`) ... ID of the requested offer. 
+        Offer represents one recommendation or search component. 
+        Various components can be placed within one location depending on the conditions. 
+        Needed for proper analytics function. Provided by Persoo.
     + location_id (optional, string, `f5b8911747b04e8dadb97be5ac8af431`) ... ID of the requested location. 
+        Location represent one specific location in the website layout. 
         Needed for proper analytics function. Provided by Persoo.
     + index (optional, string, `products`) ... ID of the requested index. Needed for proper analytics function. Provided by Persoo.
     + items_per_page (optional, number, `12` ) ... Number of items returned when using pagination. Default: 30
