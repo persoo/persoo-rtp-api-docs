@@ -57,7 +57,7 @@ to report visitor interactions and to receive personalizations as HTML fragments
     + sortby_field (optional, string, `price`) ... Any numeric attribute of the returned item. This sorting overrides default ordering calculated by the algorithm.
     + sort_order (optional, string, `asc`) ... Specifies ascending or descending sort order. Accepts 'asc' and 'desc'.
     + ids_only (optional, boolean, `true`) ... Whether itemIDs only or all allowed product metadata. Default is false.
-    + query (optional, string, `men shoes`) ... Context: search query, when requesting search algorithm.
+    + query (optional, string, `"men shoes"`) ... Context: search query, when requesting search algorithm. Needs to be in double quotes and encoded.
     + page_type (required, string, `homepage`) ... Context: pageType of the requesting page, usually 'homepage', 'category', 'detail', 'basket' etc.
     + item_id (optional, string, `PROD001`) ... Context: itemID of the product the event is relating to.
     + category_id (optional, string, `Smart phones`) ... Context: categoryID of the category the event is relating to.
