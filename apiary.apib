@@ -74,7 +74,7 @@ to report visitor interactions and to receive personalizations as HTML fragments
         Location represent one specific location in the website layout. 
         Needed for proper analytics function. Provided by Persoo.
     + index (optional, string, `products`) ... ID of the requested index. Needed for proper analytics function. Provided by Persoo.
-    + items_per_page (optional, number, `12` ) ... Number of items returned when using pagination. Default: 30
+    + items_per_page (optional, number, `12` ) ... Number of items returned when using pagination. Default: 30. IMPORTANT: keep this number well below 1000, numbers above will slow down the response exponentially.
     + page (optional, number, `3`) ... Pagination number of page requested. Starts at zero. Default: 0
     + id_type (optional, string, `storeID`) ... Visitor ID for custom identification tagging. Paired with idValue.
     + id_value (optional, string, `C2223`) ... Value of the Visitor ID specified in idType. Paired with idType.
