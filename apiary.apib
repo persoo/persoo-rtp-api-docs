@@ -50,7 +50,7 @@ to report visitor interactions and to receive personalizations as HTML fragments
           Created by JS Persoo snippet and stored in the `persooVid` cookie. 
           Alternatively can be generated server-side.
     + agent (required, string, `my-server-3`) ... ID of webserver, who calls this API.
-    + referring_page (required, string, `https://mywebsite.com`) ... URL of the requesting page.
+    + referring_page (optional, string, `https://mywebsite.com`) ... URL of the requesting page.
     + debug (optional, boolean, `false`) ... Whether to include debug information in the response. Default is false.   
     + event (required, string, `getRecommendation`) ... Event name. Usually 'pageview', 'statistics', 'addToBasket' and other.
     + requesting_page (required, string, `https://mywebsite.com`) ... URL or ID of the requesting page.
@@ -58,7 +58,7 @@ to report visitor interactions and to receive personalizations as HTML fragments
     + sort_order (optional, string, `asc`) ... Specifies ascending or descending sort order. Accepts 'asc' and 'desc'.
     + ids_only (optional, boolean, `true`) ... Whether itemIDs only or all allowed product metadata. Default is false.
     + query (optional, string, `"men shoes"`) ... Context: search query, when requesting search algorithm. Needs to be in double quotes and encoded.
-    + page_type (required, string, `homepage`) ... Context: pageType of the requesting page, usually 'homepage', 'category', 'detail', 'basket' etc.
+    + page_type (optional, string, `homepage`) ... Context: pageType of the requesting page, usually 'homepage', 'category', 'detail', 'basket' etc.
     + item_id (optional, string, `PROD001`) ... Context: itemID of the product the event is relating to.
     + category_id (optional, string, `Smart phones`) ... Context: categoryID of the category the event is relating to.
     + hierarchy (optional, string, `Electonics:Phones:Smart phones`) ... Context: category hierarchy as given in page breadcrumb.
